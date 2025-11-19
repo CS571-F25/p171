@@ -46,15 +46,15 @@
   max-width: 900px;
   margin: 2.5rem auto;
   padding: 2rem;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial;
   color: #0f172a;
 }
 .hero {
-  background: linear-gradient(180deg,#fff 0%, #fffaf0 100%);
+  background: linear-gradient(180deg, #fff 0%, #fffaf0 100%);
   padding: 2.5rem;
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(15,23,42,0.07);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
 }
 .brand {
   font-weight: 800;
@@ -94,18 +94,30 @@
 }
 .links {
   margin-top: 0.75rem;
-  display:flex;
-  gap:1rem;
-  justify-content:center;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
 }
-.links a { color: #0ea5e9; text-decoration: none }
+.links a {
+  color: #0ea5e9;
+  text-decoration: none;
+}
 .features {
   margin-top: 1.75rem;
   padding: 1.25rem 0;
 }
-.features h2 { margin-bottom: 0.5rem }
-.features ul { color: #334155; line-height:1.6 }
-.placeholder-footer { margin-top: 2rem; color: #64748b; text-align:center }
+.features h2 {
+  margin-bottom: 0.5rem;
+}
+.features ul {
+  color: #334155;
+  line-height: 1.6;
+}
+.placeholder-footer {
+  margin-top: 2rem;
+  color: #64748b;
+  text-align: center;
+}
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
@@ -122,8 +134,8 @@
   }
 
   .hero {
-    background: linear-gradient(180deg,#071427 0%, #071827 100%);
-    box-shadow: 0 6px 20px rgba(2,6,23,0.6);
+    background: linear-gradient(180deg, #071427 0%, #071827 100%);
+    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.6);
   }
 
   .brand {
@@ -151,12 +163,18 @@
   .notify-form button {
     background: #ef4444;
     color: white;
-    box-shadow: 0 6px 20px rgba(239,68,68,0.18);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.18);
   }
 
-  .links a { color: #60a5fa }
+  .links a {
+    color: #60a5fa;
+  }
 
-  .features ul { color: #cbd5e1 }
+  .features ul {
+    color: #cbd5e1;
+  }
 
-  .placeholder-footer { color: #94a3b8 }
+  .placeholder-footer {
+    color: #94a3b8;
+  }
 }
