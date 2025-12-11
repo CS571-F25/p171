@@ -16,14 +16,22 @@ import {
   Row,
   Col,
   Card,
+  Tabs,
+  Tab,
 } from "react-bootstrap";
 import "./App.css";
 import { events } from "./data/events";
 
+const parseDate = (dateString) => {
+  if (!dateString) return new Date();
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const sortByDate = (list) =>
   [...list].sort(
     (a, b) =>
-      new Date(a.date).getTime() - new Date(b.date).getTime() ||
+      parseDate(a.date).getTime() - parseDate(b.date).getTime() ||
       a.name.localeCompare(b.name)
   );
 
@@ -85,6 +93,10 @@ function App() {
   }, [savedIds]);
 
   useEffect(() => {
+    if (filteredEvents.length === 0) {
+      setSelectedEventId(null);
+      return;
+    }
     if (!filteredEvents.find((e) => e.id === selectedEventId)) {
       setSelectedEventId(filteredEvents[0]?.id || sortedEvents[0]?.id || events[0].id);
     }
@@ -92,8 +104,7 @@ function App() {
 
   const selectedEvent =
     filteredEvents.find((event) => event.id === selectedEventId) ||
-    sortedEvents.find((event) => event.id === selectedEventId) ||
-    sortedEvents[0];
+    (filteredEvents.length ? filteredEvents[0] : null);
 
   const handleSave = (eventId) => {
     if (!user) {
@@ -128,6 +139,7 @@ function App() {
                 onCta={() => setShowAuth(true)}
                 savedCount={savedIds.length}
                 events={sortedEvents}
+                user={user}
               />
             }
           />
@@ -256,10 +268,22 @@ function PrimaryNav({ user, onAuthToggle, savedCount, onSignOut }) {
   );
 }
 
-function HomePage({ onCta, savedCount, events }) {
+function HomePage({ onCta, savedCount, events, user }) {
+  const navigate = useNavigate();
+  const handlePrimaryClick = () => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
+    onCta();
+  };
   return (
     <>
-      <Hero onCta={onCta} savedCount={savedCount} />
+      <Hero
+        onCta={handlePrimaryClick}
+        savedCount={savedCount}
+        isLoggedIn={Boolean(user)}
+      />
       <section className="section">
         <div className="section-heading">
           <div>
@@ -436,16 +460,135 @@ function ContactPage() {
       <div className="section-heading">
         <div>
           <p className="eyebrow">Contact</p>
-          <h1>Questions, partnerships, or a new event tip?</h1>
+          <h1>Get in touch or submit your next event</h1>
         </div>
         <div className="pill">Community-first</div>
       </div>
-      <ContactSection />
+      <div className="contact-tabs-shell">
+        <Tabs defaultActiveKey="contact" className="mb-3" justify>
+          <Tab eventKey="contact" title="Contact">
+            <div className="contact-tab-panel">
+              <ContactSection />
+            </div>
+          </Tab>
+          <Tab eventKey="submit" title="Submit an event">
+            <div className="contact-tab-panel">
+              <SubmitEventSection />
+            </div>
+          </Tab>
+        </Tabs>
+      </div>
     </section>
   );
 }
 
-function Hero({ onCta, savedCount }) {
+function SubmitEventSection() {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert("Thanks! We received your event request (demo).");
+    e.target.reset();
+  };
+
+  return (
+    <section className="section">
+      <div className="contact">
+        <div className="contact-grid">
+          <div className="contact-copy">
+            <p className="lede">
+              Tell us about your food event, market, or pop-up. We review submissions daily
+              and will follow up for artwork or ticket links.
+            </p>
+            <ul className="contact-list">
+              <li>Include dates, times, address, and your ticket URL.</li>
+              <li>Add category and a short description to help us feature it.</li>
+              <li>We’ll email you once it’s live in the calendar.</li>
+            </ul>
+          </div>
+          <Form className="contact-form" onSubmit={handleSubmit} aria-label="Submit event form">
+            <Form.Group controlId="eventName" className="mb-3">
+              <Form.Label>Event name</Form.Label>
+              <Form.Control name="name" placeholder="Sunset Food Truck Rally" required />
+            </Form.Group>
+            <Row className="mb-3">
+              <Col xs={12} md={6}>
+                <Form.Group controlId="eventDate">
+                  <Form.Label>Date</Form.Label>
+                  <Form.Control type="date" name="date" required />
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={6}>
+                <Form.Group controlId="eventTime">
+                  <Form.Label>Time</Form.Label>
+                  <Form.Control name="time" placeholder="5:00 PM – 10:00 PM" required />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col xs={12} md={6}>
+                <Form.Group controlId="eventLocation">
+                  <Form.Label>Location</Form.Label>
+                  <Form.Control name="location" placeholder="Venue or address" required />
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={6}>
+                <Form.Group controlId="eventCity">
+                  <Form.Label>City</Form.Label>
+                  <Form.Control name="city" placeholder="City, State" required />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group controlId="eventCategory" className="mb-3">
+              <Form.Label>Category</Form.Label>
+              <Form.Select name="category" required>
+                <option value="">Select a category</option>
+                <option>Street Food</option>
+                <option>Market</option>
+                <option>Festival</option>
+                <option>Fine Dining</option>
+                <option>Pop-up</option>
+                <option>Workshop</option>
+                <option>Tasting</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group controlId="eventUrl" className="mb-3">
+              <Form.Label>Ticket or website URL</Form.Label>
+              <Form.Control
+                type="url"
+                name="url"
+                placeholder="https://example.com/tickets"
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="eventDescription" className="mb-3">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                name="description"
+                placeholder="Tell us about the experience, food, and highlights."
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="eventContact" className="mb-3">
+              <Form.Label>Contact email</Form.Label>
+              <Form.Control
+                type="email"
+                name="contact"
+                placeholder="you@example.com"
+                required
+              />
+            </Form.Group>
+            <Button className="primary-btn" type="submit">
+              Submit event
+            </Button>
+          </Form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Hero({ onCta, savedCount, isLoggedIn }) {
   return (
     <section className="hero">
       <div className="hero-copy">
@@ -457,7 +600,7 @@ function Hero({ onCta, savedCount }) {
         </p>
         <div className="hero-actions">
           <Button className="primary-btn" onClick={onCta} aria-label="Create account">
-            {savedCount ? "View my saved events" : "Create my free account"}
+            {isLoggedIn || savedCount ? "View my saved events" : "Create my free account"}
           </Button>
           <NavLink className="text-link" to="/events">
             Browse events ↘
@@ -529,7 +672,7 @@ function FilterBar({
 }) {
   const uniqueDates = useMemo(() => {
     const sortedUnique = Array.from(new Set(dates)).sort(
-      (a, b) => new Date(a).getTime() - new Date(b).getTime()
+      (a, b) => parseDate(a).getTime() - parseDate(b).getTime()
     );
     return ["All dates", ...sortedUnique];
   }, [dates]);
@@ -603,7 +746,7 @@ function CalendarStrip({ dates, selectedDate, onSelectDate }) {
   return (
     <div className="calendar-strip" aria-label="Event calendar">
       {dates.map((date) => {
-        const asDate = new Date(date);
+        const asDate = parseDate(date);
         const day = asDate.toLocaleDateString("en-US", { weekday: "short" });
         const dayNum = asDate.getDate();
         return (
@@ -689,7 +832,13 @@ function EventCard({ event, selected, onSelect, onSave, saved }) {
 }
 
 function EventDetail({ event, onSave, isSaved }) {
-  if (!event) return null;
+  if (!event) {
+    return (
+      <div className="event-detail">
+        <div className="empty">No event selected. Adjust filters to see details.</div>
+      </div>
+    );
+  }
   return (
     <div className="event-detail" aria-live="polite">
       <div className="detail-header">
@@ -745,6 +894,8 @@ function EventDetail({ event, onSave, isSaved }) {
 }
 
 function SavedDashboard({ events, onSave, hasAccount }) {
+  const [sort, setSort] = useState("date");
+
   if (!hasAccount) {
     return (
       <div className="empty">
@@ -761,28 +912,102 @@ function SavedDashboard({ events, onSave, hasAccount }) {
     );
   }
 
+  const sortedEvents = useMemo(() => {
+    const list = [...events];
+    if (sort === "name") {
+      return list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list.sort(
+      (a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime()
+    );
+  }, [events, sort]);
+
+  const categories = Array.from(new Set(events.map((e) => e.category)));
+  const nextEvent = sortedEvents[0];
+
   return (
-    <Row xs={1} md={2} className="g-3">
-      {events.map((event) => (
-        <Col key={event.id}>
-          <Card className="saved-card h-100">
-            <Card.Body>
-              <Card.Title>{event.name}</Card.Title>
-              <Card.Subtitle className="mb-2 text-muted">
-                {event.datePretty} • {event.time}
-              </Card.Subtitle>
-              <Card.Text>{event.location}</Card.Text>
-              <div className="d-flex justify-content-between align-items-center mt-2">
-                <span className="pill soft">{event.category}</span>
-                <Button variant="outline-dark" size="sm" onClick={() => onSave(event.id)}>
-                  Remove
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      ))}
-    </Row>
+    <div className="saved-dashboard">
+      <div className="saved-summary">
+        <div>
+          <p className="mini-title">Saved events</p>
+          <p className="muted">
+            {events.length} saved • {categories.length} categories
+          </p>
+          {nextEvent && (
+            <p className="muted">
+              Next up: <strong>{nextEvent.name}</strong> — {nextEvent.datePretty} at{" "}
+              {nextEvent.time}
+            </p>
+          )}
+        </div>
+        <div className="summary-actions">
+          <div className="chip-row">
+            <button
+              className={`chip ${sort === "date" ? "active" : ""}`}
+              onClick={() => setSort("date")}
+              type="button"
+            >
+              Sort by date
+            </button>
+            <button
+              className={`chip ${sort === "name" ? "active" : ""}`}
+              onClick={() => setSort("name")}
+              type="button"
+            >
+              Sort by name
+            </button>
+          </div>
+          <div className="summary-tags">
+            {categories.map((cat) => (
+              <span key={cat} className="pill soft">
+                {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <Row xs={1} md={2} className="g-3">
+        {sortedEvents.map((event) => (
+          <Col key={event.id}>
+            <Card className="saved-card h-100">
+              <Card.Body>
+                <div className="d-flex justify-content-between align-items-start gap-2">
+                  <div>
+                    <Card.Title>{event.name}</Card.Title>
+                    <Card.Subtitle className="mb-2 text-muted">
+                      {event.datePretty} • {event.time}
+                    </Card.Subtitle>
+                    <Card.Text>{event.location}</Card.Text>
+                  </div>
+                  <span className="pill soft">{event.category}</span>
+                </div>
+                <ul className="tag-row">
+                  {event.tags.slice(0, 3).map((tag) => (
+                    <li key={tag} className="pill soft">
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+                <div className="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                  <Button
+                    variant="outline-dark"
+                    size="sm"
+                    as={NavLink}
+                    to={`/events/${event.id}`}
+                  >
+                    View details
+                  </Button>
+                  <Button variant="light" size="sm" onClick={() => onSave(event.id)}>
+                    Remove
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </div>
   );
 }
 
@@ -850,7 +1075,7 @@ function Footer() {
         <div className="footer-links">
           <NavLink to="/events">Discover</NavLink>
           <NavLink to="/dashboard">My Events</NavLink>
-          <NavLink to="/contact">Contact</NavLink>
+          <NavLink to="/contact">Contact & Submit</NavLink>
         </div>
       </Container>
     </footer>
